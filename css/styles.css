@@ -11014,3 +11014,7 @@ section.resume-section .resume-section-content {
     height: 3.5rem;
   }
 }
+
+.content {
+  padding: 2rem;
+}

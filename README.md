@@ -4,14 +4,12 @@
 This is a simple two player game where each player takes turns removing squares from a chocolate bar.
 Once one removes a square, all squares to the right and below are also removed.
 The player who removes the last square loses.
-
+This webpage allows you to understand if a given position is winning or losing, and also to explore the partitions of the chocolate bar.
 
 # Things to do
 
-Add a partition constructor
-Add a partition displayer
-Add a partition cnostructor for the $n \times m$ chocolate bar
-Add a partition explorer where clicking in a square will change the partition
+Add a partition constructor for the $n \times m$ chocolate bar
+Fix the partition explorer: clicking in a square will change the partition
 
 # How to test website during development
 

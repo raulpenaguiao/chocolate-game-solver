@@ -17,7 +17,16 @@
         <link href="css/styles.css" rel="stylesheet" />
     </head>
     <body id="page-top">
-        <div id="partitionSelect"></div>
-        <div id="partitionDisplayer"></div>
+        <div id="partitionNumbers" class="content" style="visibility: hidden;"></div>
+        <div id="partitionSelect" class="content"></div>
+        <div id="partitionDisplayer" class="content"></div>
+        <div id="buttonDiv" class="content">
+            <button id="calculateButton" onclick="calculate()">Calculate</button>
+        </div>
+        <div id="resultDiv" class="content">
+            <div id="resultIndicator" style="width: 50px; height: 50px; border-radius: 50%; display: none;" class="content"></div>
+        </div>
+        <script src="js/partitions.js"></script>
+        <script src="js/scripts.js"></script>
     </body>
 </html>
