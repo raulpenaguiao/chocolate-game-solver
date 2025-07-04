@@ -55,16 +55,16 @@ function displayPartitionYoungDiagram(partition) {
             const x = xPos;
             const y = yPos + (i * (squareSize + padding));
             ctx.strokeRect(x, y, squareSize, squareSize);
-            let newPartition = RemoveBlock(partition, index, i);
+            let newPartition = RemoveBlock(partition, index + 1, i + 1, true);
             canvas.addEventListener('click', (event) => {
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = event.clientX - rect.left;
                 const mouseY = event.clientY - rect.top;
-                if(x < mouseX < x + squareSize && y < mouseY < y + squareSize) {
+                if(x < mouseX && mouseX < x + squareSize && y < mouseY && mouseY < y + squareSize) {
                     console.log(`Clicked button at X = ${mouseX}, Y = ${mouseY}`);
                     console.log(`New partition: ${newPartition}`);
                     CurrentPartition = newPartition;
-                    displayNewPartition();
+                    setTimeout(displayNewPartition, 20);
                 }
             });
         }

@@ -9,7 +9,7 @@ This webpage allows you to understand if a given position is winning or losing, 
 # Things to do
 
 Add a partition constructor for the $n \times m$ chocolate bar
-Fix the partition explorer: clicking in a square will change the partition
+Adapt design so that big partitions are visible on screen
 
 # How to test website during development
 
