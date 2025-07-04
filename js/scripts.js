@@ -55,14 +55,13 @@ function displayPartitionYoungDiagram(partition) {
             const x = xPos;
             const y = yPos + (i * (squareSize + padding));
             ctx.strokeRect(x, y, squareSize, squareSize);
-            let newPartition = RemoveBlock(partition, index + 1, i + 1, true);
+            let newPartition = RemoveBlock(partition, index + 1, i + 1);
             canvas.addEventListener('click', (event) => {
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = event.clientX - rect.left;
                 const mouseY = event.clientY - rect.top;
                 if(x < mouseX && mouseX < x + squareSize && y < mouseY && mouseY < y + squareSize) {
-                    console.log(`Clicked button at X = ${mouseX}, Y = ${mouseY}`);
-                    console.log(`New partition: ${newPartition}`);
+                    //console.log(`Clicked button at X = ${mouseX}, Y = ${mouseY}`);
                     CurrentPartition = newPartition;
                     setTimeout(displayNewPartition, 20);
                 }
@@ -131,7 +130,7 @@ function drawSquare(ctx, x, y, buttonSize, text, canvas, newPartition) {
         const mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
         if((x < mouseX) && (mouseX < x + buttonSize) && (y < mouseY) && (mouseY < y + buttonSize)) {
-            console.log(`Clicked button at X = ${mouseX}, Y = ${mouseY}, displaying new partition: ${newPartition} from partition: ${CurrentPartition} and symbol: ${text}`);
+            //console.log(`Clicked button at X = ${mouseX}, Y = ${mouseY}, displaying new partition: ${newPartition} from partition: ${CurrentPartition} and symbol: ${text}`);
             CurrentPartition = newPartition;
             setTimeout(displayNewPartition, 20);
         }
