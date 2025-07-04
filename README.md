@@ -10,6 +10,8 @@ This webpage allows you to understand if a given position is winning or losing, 
 
 Add a partition constructor for the $n \times m$ chocolate bar
 Adapt design so that big partitions are visible on screen
+Show which move is the winning move if position is winning
+Add explanation of the game
 
 # How to test website during development
 
