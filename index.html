@@ -17,14 +17,46 @@
         <link href="css/styles.css" rel="stylesheet" />
     </head>
     <body id="page-top">
-        <div id="partitionNumbers" class="content" style="visibility: hidden;"></div>
-        <div id="partitionSelect" class="content"></div>
-        <div id="partitionDisplayer" class="content"></div>
-        <div id="buttonDiv" class="content">
-            <button id="calculateButton" onclick="calculate()">Calculate</button>
-        </div>
-        <div id="resultDiv" class="content">
-            <div id="resultIndicator" style="width: 50px; height: 50px; border-radius: 50%; display: none;" class="content"></div>
+        <div id="mainContainer" class="main-container">
+            <!-- Left Column: Controls -->
+            <div id="controlsPanel" class="controls-panel">
+                <!-- Rectangular Partition Form -->
+                <div id="rectangularPartitionDiv" class="content">
+                    <h3>Create Rectangular Partition</h3>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <label for="rectWidth">Width:</label>
+                            <input type="number" id="rectWidth" min="1" placeholder="Width" style="width: 80px; padding: 0.5rem;">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <label for="rectHeight">Height:</label>
+                            <input type="number" id="rectHeight" min="1" placeholder="Height" style="width: 80px; padding: 0.5rem;">
+                        </div>
+                        <button id="createRectButton" onclick="createRectangularPartition()" style="padding: 0.5rem 1rem;">Create</button>
+                    </div>
+                </div>
+
+                <!-- Partition Selector -->
+                <div id="partitionSelect" class="content"></div>
+
+                <!-- Calculate Button -->
+                <div id="buttonDiv" class="content">
+                    <button id="calculateButton" onclick="calculate()">Calculate</button>
+                </div>
+
+                <!-- Result Display -->
+                <div id="resultDiv" class="content">
+                    <div id="resultIndicator" style="width: 50px; height: 50px; border-radius: 50%; display: none;" class="content"></div>
+                </div>
+
+                <!-- Partition Numbers (underneath everything) -->
+                <div id="partitionNumbers" class="content" style="visibility: hidden; position: relative; z-index: 0;"></div>
+            </div>
+
+            <!-- Right Column: Chocolate Display (Scrollable) -->
+            <div id="displayPanel" class="display-panel">
+                <div id="partitionDisplayer" class="content display-content"></div>
+            </div>
         </div>
         <script src="js/partitions.js"></script>
         <script src="js/scripts.js"></script>

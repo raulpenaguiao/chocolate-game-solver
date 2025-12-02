@@ -36,56 +36,96 @@ window.addEventListener('DOMContentLoaded', event => {
 function displayPartitionYoungDiagram(partition) {
     const partitionDisplayer = document.getElementById('partitionDisplayer');
     partitionDisplayer.innerHTML = ''; // Clear previous content
+
     // Create canvas element
     const canvas = document.createElement('canvas');
-    canvas.width = 400;
-    canvas.height = 200;
     partitionDisplayer.appendChild(canvas);
 
-    const ctx = canvas.getContext('2d');
     const squareSize = 30;
     const padding = 5;
-    let xPos = 10;
-    let yPos = 10;
+    const marginX = 10;
+    const marginY = 10;
+
+    // Calculate logical canvas size based on partition dimensions
+    const maxRowLength = Math.max(...partition);
+    const numRows = partition.length;
+    const logicalWidth = maxRowLength * (squareSize + padding) + marginX * 2;
+    const logicalHeight = numRows * (squareSize + padding) + marginY * 2;
+
+    // Get available space in display panel
+    const availableWidth = partitionDisplayer.clientWidth;
+    const availableHeight = partitionDisplayer.clientHeight;
+
+    // Calculate scale factor - allow scrolling if content is too large
+    const maxWidth = availableWidth - 40; // Account for padding and scrollbar
+    const maxHeight = availableHeight - 40;
+    const scaleX = maxWidth / logicalWidth;
+    const scaleY = maxHeight / logicalHeight;
+    const scale = Math.min(scaleX, scaleY, 1); // Don't zoom in, only out
+
+    // Set canvas size based on logical size with scaling
+    canvas.width = Math.max(logicalWidth * scale, availableWidth);
+    canvas.height = Math.max(logicalHeight * scale, availableHeight);
+
+    const ctx = canvas.getContext('2d');
+
+    // Calculate centering offset - only center if content is smaller than viewport
+    const scaledWidth = logicalWidth * scale;
+    const scaledHeight = logicalHeight * scale;
+    const offsetX = Math.max(0, (availableWidth - scaledWidth) / 2);
+    const offsetY = Math.max(0, (availableHeight - scaledHeight) / 2);
+
+    ctx.save();
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(scale, scale);
+
+    // Store square positions for click detection
+    const squarePositions = [];
+
+    let xPos = marginX;
 
     // Draw squares for each number in the partition
-    partition.forEach((part, index) => {
-        for (let i = 0; i < part; i++) {
+    partition.forEach((part, rowIndex) => {
+        for (let colIndex = 0; colIndex < part; colIndex++) {
             ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
             const x = xPos;
-            const y = yPos + (i * (squareSize + padding));
+            const y = marginY + (colIndex * (squareSize + padding));
             ctx.strokeRect(x, y, squareSize, squareSize);
-            let newPartition = RemoveBlock(partition, index + 1, i + 1);
-            canvas.addEventListener('click', (event) => {
-                const rect = canvas.getBoundingClientRect();
-                const mouseX = event.clientX - rect.left;
-                const mouseY = event.clientY - rect.top;
-                if(x < mouseX && mouseX < x + squareSize && y < mouseY && mouseY < y + squareSize) {
-                    //console.log(`Clicked button at X = ${mouseX}, Y = ${mouseY}`);
-                    CurrentPartition = newPartition;
-                    setTimeout(displayNewPartition, 20);
-                }
+
+            // Store position and partition info for click detection
+            squarePositions.push({
+                x: x,
+                y: y,
+                size: squareSize,
+                newPartition: RemoveBlock(partition, rowIndex + 1, colIndex + 1)
             });
         }
         xPos += squareSize + padding;
     });
+
+    ctx.restore();
+
+    // Single click handler for the entire canvas
     canvas.addEventListener('click', (event) => {
         const rect = canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-        console.log(`Clicked square at X = ${mouseX + 1}, Y = ${mouseY + 1}`);
+        const clickX = event.clientX - rect.left;
+        const clickY = event.clientY - rect.top;
 
-        partition.forEach((part, rowIndex) => {
-            for (let colIndex = 0; colIndex < part; colIndex++) {
-                const squareX = xPos + (colIndex * (squareSize + padding));
-                const squareY = yPos - ((partition.length - rowIndex) * (squareSize + padding));
-                
-                if (mouseX >= squareX && mouseX <= squareX + squareSize &&
-                    mouseY >= squareY && mouseY <= squareY + squareSize) {
-                    console.log(`Clicked square at row ${rowIndex + 1}, column ${colIndex + 1}`);
-                }
+        // Convert click coordinates to logical coordinates
+        // Account for the canvas transformation (translate and scale)
+        const logicalX = (clickX - offsetX) / scale;
+        const logicalY = (clickY - offsetY) / scale;
+
+        // Check which square was clicked
+        for (let square of squarePositions) {
+            if (logicalX >= square.x && logicalX <= square.x + square.size &&
+                logicalY >= square.y && logicalY <= square.y + square.size) {
+                CurrentPartition = square.newPartition;
+                setTimeout(displayNewPartition, 20);
+                return;
             }
-        });
+        }
     });
 }
 
@@ -94,14 +134,16 @@ function displayPartitionListAndButtons(partition) {
     partitionSelect.innerHTML = ''; // Clear previous content
 
     const canvas = document.createElement('canvas');
-    canvas.width = partition.length * 120;  // Width to accommodate 4 buttons per partition number
-    canvas.height = 240;
-    partitionSelect.appendChild(canvas);
-
-    const ctx = canvas.getContext('2d');
     const buttonSize = 25;
     const spacing = 5;
     const padding = 10;
+
+    // Calculate canvas dimensions based on partition length
+    canvas.width = partition.length * (buttonSize + spacing * 2) + (buttonSize + spacing) + padding * 2;
+    canvas.height = (4 * (buttonSize + spacing)) + padding * 2;
+    partitionSelect.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
 
     partition.forEach((num, index) => {
         const x = padding + index * (buttonSize + spacing);
@@ -113,8 +155,6 @@ function displayPartitionListAndButtons(partition) {
 
     });
     drawSquare(ctx, padding + partition.length * (buttonSize + spacing), padding + (2 * (buttonSize + spacing)), buttonSize, '+', canvas, AddOnePart(partition));
-
-    partitionSelect.appendChild(canvas);
 }
 
 function drawSquare(ctx, x, y, buttonSize, text, canvas, newPartition) {
@@ -175,6 +215,30 @@ function displayNewPartition() {
     displayPartitionYoungDiagram(CurrentPartition);
     displayPartitionNumbers(CurrentPartition);
     resetCalculationDisplay();
+}
+
+function createRectangularPartition() {
+    const widthInput = document.getElementById('rectWidth');
+    const heightInput = document.getElementById('rectHeight');
+
+    const width = parseInt(widthInput.value, 10);
+    const height = parseInt(heightInput.value, 10);
+
+    // Validation
+    if (isNaN(width) || isNaN(height) || width < 1 || height < 1) {
+        alert('Please enter positive numbers for both width and height');
+        return;
+    }
+
+    // Create rectangular partition: [width, width, width, ..., width] (height times)
+    CurrentPartition = Array(height).fill(width);
+
+    // Clear input fields
+    widthInput.value = '';
+    heightInput.value = '';
+
+    // Display the new partition
+    displayNewPartition();
 }
 
 let CurrentPartition = [1];

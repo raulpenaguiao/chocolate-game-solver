@@ -11018,3 +11018,118 @@ section.resume-section .resume-section-content {
 .content {
   padding: 2rem;
 }
+
+/* Two-column layout for main container */
+.main-container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100%;
+  gap: 0;
+}
+
+/* Left panel for controls */
+.controls-panel {
+  flex: 1;
+  width: 50%;
+  overflow-y: auto;
+  background-color: var(--bs-body-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 10;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* Right panel for chocolate display */
+.display-panel {
+  flex: 1;
+  width: 50%;
+  overflow: auto;
+  background-color: var(--bs-body-bg);
+  border-left: 1px solid var(--bs-border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+/* Display content inside the display panel */
+.display-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: fit-content;
+  min-height: fit-content;
+  padding: 0;
+}
+
+/* Canvas styling */
+canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Responsive design for tablets */
+@media (max-width: 1024px) {
+  .main-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .controls-panel {
+    width: 100%;
+    flex: 0 0 auto;
+    min-height: auto;
+    max-height: none;
+    border-bottom: 1px solid var(--bs-border-color);
+  }
+
+  .display-panel {
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 400px;
+    border-left: none;
+    border-top: 1px solid var(--bs-border-color);
+  }
+}
+
+/* Responsive design for phones */
+@media (max-width: 640px) {
+  .controls-panel {
+    padding: 0.75rem;
+  }
+
+  .display-panel {
+    padding: 0.75rem;
+    min-height: 300px;
+  }
+
+  .content {
+    padding: 1rem;
+  }
+
+  #rectangularPartitionDiv {
+    padding: 0.75rem;
+  }
+
+  #rectangularPartitionDiv h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+  }
+
+  #rectangularPartitionDiv input {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+
+  #rectangularPartitionDiv button {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+}
