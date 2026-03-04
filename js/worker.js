@@ -37,9 +37,11 @@ function GenerateBlockRemovedPartitions(partition) {
     return result;
 }
 
-function isWinningPosition(partition) {
-    let listPartitions = GenerateSmallerPartitions(partition);
-    let winningPositions = {};
+self.addEventListener('message', e => {
+    const partition = e.data;
+    const listPartitions = GenerateSmallerPartitions(partition);
+    const winningPositions = {};
+
     listPartitions.forEach(p => {
         let flag = (p.length === 0);
         GenerateBlockRemovedPartitions(p).forEach(brp => {
@@ -47,10 +49,21 @@ function isWinningPosition(partition) {
         });
         winningPositions[p] = flag;
     });
-    return winningPositions[partition];
-}
 
-self.addEventListener('message', e => {
-    const result = isWinningPosition(e.data);
-    self.postMessage(result);
+    const isWinning = winningPositions[partition];
+
+    // Find the winning move: the block whose removal leaves a losing position
+    let winningMove = null;
+    if (isWinning) {
+        outer: for (let i = 0; i < partition.length; i++) {
+            for (let j = 1; j <= partition[i]; j++) {
+                if (!winningPositions[RemoveBlock(partition, i + 1, j)]) {
+                    winningMove = { partitionIdx: i + 1, heightIdx: j };
+                    break outer;
+                }
+            }
+        }
+    }
+
+    self.postMessage({ isWinning, winningMove });
 });

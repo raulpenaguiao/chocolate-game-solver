@@ -44,14 +44,15 @@
                     </div>
                 </div>
 
-                <!-- Calculate Button -->
-                <div id="buttonDiv" class="content">
+                <!-- Calculate / Undo Buttons -->
+                <div id="buttonDiv" class="content" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                     <button id="calculateButton" onclick="calculate()">Calculate</button>
+                    <button id="undoButton" onclick="undoMove()" disabled>Undo</button>
                 </div>
 
                 <!-- Result Display -->
                 <div id="resultDiv" class="content">
-                    <div id="resultIndicator" style="width: 50px; height: 50px; border-radius: 50%; display: none;" class="content"></div>
+                    <div id="resultIndicator" style="display: none;"></div>
                     <div id="tooBigMessage" style="display: none;">Object too big — try a smaller bar.</div>
                 </div>
 

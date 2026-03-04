@@ -87,10 +87,19 @@ function displayPartitionYoungDiagram(partition) {
     // Draw squares for each number in the partition
     partition.forEach((part, rowIndex) => {
         for (let colIndex = 0; colIndex < part; colIndex++) {
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 1;
             const x = xPos;
             const y = marginY + (colIndex * (squareSize + padding));
+
+            // Hint highlight: green fill for the winning move square
+            if (_hintMove &&
+                _hintMove.partitionIdx === rowIndex + 1 &&
+                _hintMove.heightIdx === colIndex + 1) {
+                ctx.fillStyle = 'rgba(34, 197, 94, 0.55)';
+                ctx.fillRect(x, y, squareSize, squareSize);
+            }
+
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
             ctx.strokeRect(x, y, squareSize, squareSize);
 
             // Store position and partition info for click detection
@@ -121,8 +130,7 @@ function displayPartitionYoungDiagram(partition) {
         for (let square of squarePositions) {
             if (logicalX >= square.x && logicalX <= square.x + square.size &&
                 logicalY >= square.y && logicalY <= square.y + square.size) {
-                CurrentPartition = square.newPartition;
-                setTimeout(displayNewPartition, 20);
+                setPartition(square.newPartition);
                 return;
             }
         }
@@ -170,18 +178,31 @@ function drawSquare(ctx, x, y, buttonSize, text, canvas, newPartition) {
         const mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
         if((x < mouseX) && (mouseX < x + buttonSize) && (y < mouseY) && (mouseY < y + buttonSize)) {
-            //console.log(`Clicked button at X = ${mouseX}, Y = ${mouseY}, displaying new partition: ${newPartition} from partition: ${CurrentPartition} and symbol: ${text}`);
-            CurrentPartition = newPartition;
-            setTimeout(displayNewPartition, 20);
+            setPartition(newPartition);
         }
     });
 }
 
 let _calcWorker = null;
 let _calcTimeout = null;
+let _hintMove = null;
+let _partitionHistory = [];
+
+function setPartition(newPartition) {
+    _partitionHistory.push([...CurrentPartition]);
+    CurrentPartition = newPartition;
+    document.getElementById('undoButton').disabled = false;
+    setTimeout(displayNewPartition, 20);
+}
+
+function undoMove() {
+    if (_partitionHistory.length === 0) return;
+    CurrentPartition = _partitionHistory.pop();
+    document.getElementById('undoButton').disabled = (_partitionHistory.length === 0);
+    displayNewPartition();
+}
 
 function calculate() {
-    // Cancel any in-progress calculation
     if (_calcWorker) {
         _calcWorker.terminate();
         _calcWorker = null;
@@ -193,6 +214,7 @@ function calculate() {
     const calcButton = document.getElementById('calculateButton');
 
     resultIndicator.style.display = 'none';
+    resultIndicator.className = '';
     tooBigMessage.style.display = 'none';
     calcButton.disabled = true;
     calcButton.textContent = 'Calculating…';
@@ -214,13 +236,16 @@ function calculate() {
         calcButton.disabled = false;
         calcButton.textContent = 'Calculate';
 
+        const { isWinning, winningMove } = e.data;
         resultIndicator.style.display = 'block';
-        if (e.data) {
-            resultIndicator.style.backgroundColor = 'green';
-            resultIndicator.textContent = '✓';
+        if (isWinning) {
+            resultIndicator.className = 'result-winning';
+            resultIndicator.textContent = 'Current player has a winning strategy!';
+            _hintMove = winningMove;
+            displayPartitionYoungDiagram(CurrentPartition);
         } else {
-            resultIndicator.style.backgroundColor = 'red';
-            resultIndicator.textContent = '✗';
+            resultIndicator.className = 'result-losing';
+            resultIndicator.textContent = 'Current player cannot guarantee a victory here.';
         }
     });
 
@@ -233,6 +258,7 @@ function resetCalculationDisplay() {
         _calcWorker = null;
     }
     clearTimeout(_calcTimeout);
+    _hintMove = null;
 
     const calcButton = document.getElementById('calculateButton');
     calcButton.disabled = false;
@@ -240,7 +266,7 @@ function resetCalculationDisplay() {
 
     const resultIndicator = document.getElementById('resultIndicator');
     resultIndicator.style.display = 'none';
-    resultIndicator.style.backgroundColor = '';
+    resultIndicator.className = '';
     resultIndicator.textContent = '';
 
     document.getElementById('tooBigMessage').style.display = 'none';
@@ -271,15 +297,11 @@ function createRectangularPartition() {
         return;
     }
 
-    // Create rectangular partition: [height, height, ..., height] (width times)
-    CurrentPartition = Array(width).fill(height);
-
     // Clear input fields
     widthInput.value = '';
     heightInput.value = '';
 
-    // Display the new partition
-    displayNewPartition();
+    setPartition(Array(width).fill(height));
 }
 
 let CurrentPartition = [1];
