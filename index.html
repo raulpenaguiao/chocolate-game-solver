@@ -20,6 +20,7 @@
         <!-- Title -->
         <div class="title-bar">
             <h1 class="app-title">The Chocolate Game</h1>
+            <button id="darkModeButton" class="icon-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
         </div>
 
         <!-- Full-width partition selector bar -->
@@ -44,10 +45,11 @@
                     </div>
                 </div>
 
-                <!-- Calculate / Undo Buttons -->
+                <!-- Calculate / Undo / Share Buttons -->
                 <div id="buttonDiv" class="content" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                     <button id="calculateButton" onclick="calculate()">Calculate</button>
                     <button id="undoButton" onclick="undoMove()" disabled>Undo</button>
+                    <button id="shareButton" onclick="shareLink()">Share</button>
                 </div>
 
                 <!-- Result Display -->

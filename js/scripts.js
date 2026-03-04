@@ -37,6 +37,20 @@ function displayPartitionYoungDiagram(partition) {
     const partitionDisplayer = document.getElementById('partitionDisplayer');
     partitionDisplayer.innerHTML = ''; // Clear previous content
 
+    // Guard: empty partition means the game is over
+    if (!partition || partition.length === 0) {
+        const msg = document.createElement('p');
+        msg.textContent = 'No chocolate left!';
+        msg.style.cssText = 'font-size:1.25rem; color:var(--bs-secondary); text-align:center; margin:0;';
+        partitionDisplayer.appendChild(msg);
+        return;
+    }
+
+    // Guard: layout not ready yet — skip silently
+    const availableWidth = partitionDisplayer.clientWidth;
+    const availableHeight = partitionDisplayer.clientHeight;
+    if (availableWidth <= 0 || availableHeight <= 0) return;
+
     // Create canvas element
     const canvas = document.createElement('canvas');
     partitionDisplayer.appendChild(canvas);
@@ -51,10 +65,6 @@ function displayPartitionYoungDiagram(partition) {
     const numCols = partition.length;
     const logicalWidth = numCols * (squareSize + padding) + marginX * 2;
     const logicalHeight = maxColHeight * (squareSize + padding) + marginY * 2;
-
-    // Get available space in display panel
-    const availableWidth = partitionDisplayer.clientWidth;
-    const availableHeight = partitionDisplayer.clientHeight;
 
     // Calculate scale factor - allow scrolling if content is too large
     const maxWidth = availableWidth - 40; // Account for padding and scrollbar
@@ -90,16 +100,17 @@ function displayPartitionYoungDiagram(partition) {
             const x = xPos;
             const y = marginY + (colIndex * (squareSize + padding));
 
-            // Hint highlight: green fill for the winning move square
-            if (_hintMove &&
-                _hintMove.partitionIdx === rowIndex + 1 &&
-                _hintMove.heightIdx === colIndex + 1) {
-                ctx.fillStyle = 'rgba(34, 197, 94, 0.55)';
-                ctx.fillRect(x, y, squareSize, squareSize);
-            }
+            const isHint = _hintMoves.some(h =>
+                h.partitionIdx === rowIndex + 1 && h.heightIdx === colIndex + 1);
 
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 1;
+            ctx.fillStyle = isHint
+                ? 'rgba(34, 197, 94, 0.7)'
+                : 'rgba(139, 90, 43, 0.82)';
+            ctx.fillRect(x, y, squareSize, squareSize);
+
+            const dark = document.body.getAttribute('data-theme') === 'dark';
+            ctx.strokeStyle = dark ? '#c8a46e' : '#5a3010';
+            ctx.lineWidth = 1.5;
             ctx.strokeRect(x, y, squareSize, squareSize);
 
             // Store position and partition info for click detection
@@ -153,6 +164,11 @@ function displayPartitionListAndButtons(partition) {
 
     const ctx = canvas.getContext('2d');
 
+    // Fill canvas background to match theme
+    const bgColor = getComputedStyle(document.body).getPropertyValue('--bs-body-bg').trim();
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     partition.forEach((num, index) => {
         const x = padding + index * (buttonSize + spacing);
 
@@ -166,10 +182,13 @@ function displayPartitionListAndButtons(partition) {
 }
 
 function drawSquare(ctx, x, y, buttonSize, text, canvas, newPartition) {
+    const dark = document.body.getAttribute('data-theme') === 'dark';
+    ctx.strokeStyle = dark ? '#7ab3cc' : '#333';
     ctx.strokeRect(x, y, buttonSize, buttonSize);
     ctx.font = '16px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    ctx.fillStyle = dark ? '#b8cdd6' : '#000';
     ctx.fillText(text, x + buttonSize/2, y + buttonSize/2);
 
     //Add callback function
@@ -185,7 +204,7 @@ function drawSquare(ctx, x, y, buttonSize, text, canvas, newPartition) {
 
 let _calcWorker = null;
 let _calcTimeout = null;
-let _hintMove = null;
+let _hintMoves = [];
 let _partitionHistory = [];
 
 function setPartition(newPartition) {
@@ -236,13 +255,13 @@ function calculate() {
         calcButton.disabled = false;
         calcButton.textContent = 'Calculate';
 
-        const { isWinning, winningMove } = e.data;
+        const { isWinning, winningMoves } = e.data;
         resultIndicator.style.display = 'block';
         if (isWinning) {
             resultIndicator.className = 'result-winning';
             resultIndicator.textContent = 'Current player has a winning strategy!';
-            _hintMove = winningMove;
-            displayPartitionYoungDiagram(CurrentPartition);
+            _hintMoves = winningMoves;
+            requestAnimationFrame(() => displayPartitionYoungDiagram(CurrentPartition));
         } else {
             resultIndicator.className = 'result-losing';
             resultIndicator.textContent = 'Current player cannot guarantee a victory here.';
@@ -258,7 +277,7 @@ function resetCalculationDisplay() {
         _calcWorker = null;
     }
     clearTimeout(_calcTimeout);
-    _hintMove = null;
+    _hintMoves = [];
 
     const calcButton = document.getElementById('calculateButton');
     calcButton.disabled = false;
@@ -278,10 +297,10 @@ function displayPartitionNumbers(partition) {
 }
 
 function displayNewPartition() {
+    resetCalculationDisplay();
     displayPartitionListAndButtons(CurrentPartition);
     displayPartitionYoungDiagram(CurrentPartition);
     displayPartitionNumbers(CurrentPartition);
-    resetCalculationDisplay();
 }
 
 function createRectangularPartition() {
@@ -297,23 +316,91 @@ function createRectangularPartition() {
         return;
     }
 
-    // Clear input fields
-    widthInput.value = '';
-    heightInput.value = '';
-
     setPartition(Array(width).fill(height));
+}
+
+// ── Dark mode ────────────────────────────────────────────────
+function toggleDarkMode() {
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    document.getElementById('darkModeButton').textContent = next === 'dark' ? '☀️' : '🌙';
+    displayPartitionListAndButtons(CurrentPartition);
+    displayPartitionYoungDiagram(CurrentPartition);
+}
+
+function applyTheme() {
+    const saved = localStorage.getItem('theme');
+    const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.body.setAttribute('data-theme', theme);
+    const btn = document.getElementById('darkModeButton');
+    if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+// ── Share link ───────────────────────────────────────────────
+function shareLink() {
+    const hash = '#p=' + CurrentPartition.join(',');
+    const url = window.location.href.split('#')[0] + hash;
+
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'share-toast';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            toast.addEventListener('transitionend', () => toast.remove());
+        }, 1500);
+    }
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => showToast('Link copied!'));
+    } else {
+        window.location.hash = hash;
+        prompt('Copy this link:', url);
+    }
+}
+
+function loadFromHash() {
+    const hash = window.location.hash;
+    if (!hash.startsWith('#p=')) return;
+    const nums = hash.slice(3).split(',')
+        .map(Number)
+        .filter(n => Number.isInteger(n) && n > 0);
+    if (nums.length > 0) {
+        CurrentPartition = nums.slice().sort((a, b) => b - a);
+    }
 }
 
 let CurrentPartition = [1];
 window.addEventListener('load', () => {
+    applyTheme();
+    loadFromHash();
     displayNewPartition();
     tutInit();
 
-    // Redraw when the display panel is resized (e.g. window resize, orientation change)
-    const displayPanel = document.getElementById('partitionDisplayer');
+    // Redraw when the display panel is resized
+    const displayer = document.getElementById('partitionDisplayer');
     if (window.ResizeObserver) {
         new ResizeObserver(() => {
             displayPartitionYoungDiagram(CurrentPartition);
-        }).observe(displayPanel);
+        }).observe(displayer);
     }
+
+    // Swipe right on the display panel → undo
+    const displayPanel = document.getElementById('displayPanel');
+    let touchStartX = 0;
+    let touchStartY = 0;
+    displayPanel.addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    displayPanel.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (dx > 60 && Math.abs(dy) < Math.abs(dx) * 0.6) {
+            undoMove();
+        }
+    }, { passive: true });
 });

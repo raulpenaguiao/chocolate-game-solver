@@ -52,18 +52,17 @@ self.addEventListener('message', e => {
 
     const isWinning = winningPositions[partition];
 
-    // Find the winning move: the block whose removal leaves a losing position
-    let winningMove = null;
+    // Find ALL winning moves: every block whose removal leaves a losing position
+    const winningMoves = [];
     if (isWinning) {
-        outer: for (let i = 0; i < partition.length; i++) {
+        for (let i = 0; i < partition.length; i++) {
             for (let j = 1; j <= partition[i]; j++) {
                 if (!winningPositions[RemoveBlock(partition, i + 1, j)]) {
-                    winningMove = { partitionIdx: i + 1, heightIdx: j };
-                    break outer;
+                    winningMoves.push({ partitionIdx: i + 1, heightIdx: j });
                 }
             }
         }
     }
 
-    self.postMessage({ isWinning, winningMove });
+    self.postMessage({ isWinning, winningMoves });
 });
