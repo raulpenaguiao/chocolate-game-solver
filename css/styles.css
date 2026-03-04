@@ -11016,120 +11016,297 @@ section.resume-section .resume-section-content {
 }
 
 .content {
-  padding: 2rem;
+  padding: 0.75rem;
+}
+
+/* Body is the top-level column: partition bar + two-panel row */
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Two-column layout for main container */
 .main-container {
   display: flex;
   flex-direction: row;
-  height: 100vh;
+  flex: 1;
+  min-height: 0;
   width: 100%;
   gap: 0;
+  overflow: hidden;
 }
 
-/* Left panel for controls */
+/* Left panel for controls — narrow fixed sidebar */
 .controls-panel {
-  flex: 1;
-  width: 50%;
+  flex: 0 0 260px;
+  width: 260px;
   overflow-y: auto;
   background-color: var(--bs-body-bg);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
   z-index: 10;
-  padding: 1rem;
+  padding: 0.75rem;
+  box-sizing: border-box;
+  border-right: 1px solid var(--bs-border-color);
+}
+
+/* Title bar — spans full width above everything */
+.title-bar {
+  flex: 0 0 auto;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--bs-border-color);
+  background-color: var(--bs-body-bg);
+}
+
+.app-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--bs-primary);
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* Compact h3 inside the create form */
+#rectangularPartitionDiv h3 {
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem 0;
+}
+
+/* Full-width partition selector bar — sits above both panels */
+.partition-bar {
+  flex: 0 0 auto;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-bottom: 1px solid var(--bs-border-color);
+  background-color: var(--bs-body-bg);
+  padding: 0.5rem 0.75rem;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+/* Right panel for chocolate display — fills remaining space */
+.display-panel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  background-color: var(--bs-body-bg);
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
 }
 
-/* Right panel for chocolate display */
-.display-panel {
+/* Display content scrolls when needed; centers small canvases */
+.display-content {
   flex: 1;
-  width: 50%;
+  min-height: 0;
   overflow: auto;
-  background-color: var(--bs-body-bg);
-  border-left: 1px solid var(--bs-border-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  position: relative;
-  z-index: 1;
-  box-sizing: border-box;
-}
-
-/* Display content inside the display panel */
-.display-content {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  min-width: fit-content;
-  min-height: fit-content;
   padding: 0;
 }
 
 /* Canvas styling */
 canvas {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  display: block;
 }
 
-/* Responsive design for tablets */
-@media (max-width: 1024px) {
+/* Responsive: stack vertically at tablet width */
+@media (max-width: 768px) {
   .main-container {
     flex-direction: column;
-    height: auto;
-    min-height: 100vh;
   }
 
+  /* Controls become a compact horizontal top bar */
   .controls-panel {
-    width: 100%;
     flex: 0 0 auto;
-    min-height: auto;
-    max-height: none;
-    border-bottom: 1px solid var(--bs-border-color);
-  }
-
-  .display-panel {
     width: 100%;
-    flex: 1 1 auto;
-    min-height: 400px;
-    border-left: none;
-    border-top: 1px solid var(--bs-border-color);
-  }
-}
-
-/* Responsive design for phones */
-@media (max-width: 640px) {
-  .controls-panel {
-    padding: 0.75rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-right: none;
+    border-bottom: 1px solid var(--bs-border-color);
+    overflow-y: visible;
+    overflow-x: auto;
   }
 
   .display-panel {
-    padding: 0.75rem;
-    min-height: 300px;
+    flex: 1;
+    min-height: 0;
+    border-top: 1px solid var(--bs-border-color);
   }
 
   .content {
-    padding: 1rem;
-  }
-
-  #rectangularPartitionDiv {
-    padding: 0.75rem;
+    padding: 0.5rem;
   }
 
   #rectangularPartitionDiv h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1rem;
+    font-size: 0.85rem;
   }
+}
 
-  #rectangularPartitionDiv input {
-    font-size: 16px !important; /* Prevents zoom on iOS */
-  }
-
+/* Phones: prevent iOS font-zoom on inputs */
+@media (max-width: 480px) {
+  #rectangularPartitionDiv input,
   #rectangularPartitionDiv button {
-    font-size: 16px !important; /* Prevents zoom on iOS */
+    font-size: 16px !important;
   }
+}
+
+/* ── Tutorial overlay ────────────────────────────────────── */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.tutorial-modal {
+  background: var(--bs-body-bg);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  max-width: 580px;
+  width: 92%;
+  overflow: hidden;
+}
+
+.tutorial-slides {
+  padding: 2rem;
+}
+
+.tutorial-slide {
+  flex-direction: row;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.tutorial-slide canvas {
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  background: #f5ead2;
+}
+
+.tutorial-text {
+  flex: 1;
+}
+
+.tutorial-text h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  color: var(--bs-primary);
+}
+
+.tutorial-text p,
+.tutorial-text li {
+  font-size: 0.9rem;
+  color: var(--bs-body-color);
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.tutorial-text ul {
+  padding-left: 1.2rem;
+}
+
+.tutorial-text-only {
+  width: 100%;
+}
+
+.tutorial-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  border-top: 1px solid var(--bs-border-color);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.tut-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+#tut-indicator {
+  font-size: 0.85rem;
+  color: var(--bs-secondary);
+  min-width: 3rem;
+  text-align: center;
+}
+
+.tut-btn {
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.375rem;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--bs-body-color);
+  transition: background 0.15s;
+}
+
+.tut-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.tut-btn:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.tut-btn-primary {
+  background: var(--bs-primary);
+  color: #fff;
+  border-color: var(--bs-primary);
+}
+
+.tut-btn-primary:hover:not(:disabled) {
+  background: var(--bs-secondary);
+  border-color: var(--bs-secondary);
+}
+
+.tut-btn-secondary {
+  color: var(--bs-secondary);
+  border-color: transparent;
+}
+
+@media (max-width: 480px) {
+  .tutorial-slide {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tutorial-slides {
+    padding: 1.25rem;
+  }
+
+  .tutorial-footer {
+    padding: 0.75rem 1.25rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* ── Too-big message ─────────────────────────────────────── */
+#tooBigMessage {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  background: var(--bs-warning);
+  color: #000;
+  font-size: 0.875rem;
 }

@@ -1,0 +1,28 @@
+I want this website, when openned, to make the background blurry and display a sort of tuturial of the game with three buttons "Next", "Back" and "End". This will go through slides that display the rules of the game.
+
+The first slide explains:
+
+Slide 1
+This is a two player game where players break a chocolate bar apart. The last player to play wins and the player that is left with an empty chocolate bar loses.
+Shows a picture of a chocolate bar
+
+
+Slide 2
+The chocolate bar has a square grid shape.
+On a players turn, a player selects a square and removes all squares below and to the right of the square.
+Shows a picture of the chocolate bar without some squares
+
+Slide 3
+If there is no chocolate left when it is your turn, you lost!
+Simple? Let's play
+Show picture without chocolate
+
+Slide 4
+Explains the differente UI Elements: you can create a chocolate bar, you can check if it has a winning strategy.
+
+
+---
+
+
+Now fix a couple of bugs, where the display is not adapted to smartphones and small displays.
+Fix also the bug where the chocolate bar is not all visible because there is no scroll bars or something.

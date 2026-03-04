@@ -17,6 +17,14 @@
         <link href="css/styles.css" rel="stylesheet" />
     </head>
     <body id="page-top">
+        <!-- Title -->
+        <div class="title-bar">
+            <h1 class="app-title">The Chocolate Game</h1>
+        </div>
+
+        <!-- Full-width partition selector bar -->
+        <div id="partitionSelect" class="partition-bar"></div>
+
         <div id="mainContainer" class="main-container">
             <!-- Left Column: Controls -->
             <div id="controlsPanel" class="controls-panel">
@@ -26,18 +34,15 @@
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-end;">
                         <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                             <label for="rectWidth">Width:</label>
-                            <input type="number" id="rectWidth" min="1" placeholder="Width" style="width: 80px; padding: 0.5rem;">
+                            <input type="number" id="rectWidth" min="1" placeholder="Width" value="5" style="width: 80px; padding: 0.5rem;">
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                             <label for="rectHeight">Height:</label>
-                            <input type="number" id="rectHeight" min="1" placeholder="Height" style="width: 80px; padding: 0.5rem;">
+                            <input type="number" id="rectHeight" min="1" placeholder="Height" value="5" style="width: 80px; padding: 0.5rem;">
                         </div>
                         <button id="createRectButton" onclick="createRectangularPartition()" style="padding: 0.5rem 1rem;">Create</button>
                     </div>
                 </div>
-
-                <!-- Partition Selector -->
-                <div id="partitionSelect" class="content"></div>
 
                 <!-- Calculate Button -->
                 <div id="buttonDiv" class="content">
@@ -47,6 +52,7 @@
                 <!-- Result Display -->
                 <div id="resultDiv" class="content">
                     <div id="resultIndicator" style="width: 50px; height: 50px; border-radius: 50%; display: none;" class="content"></div>
+                    <div id="tooBigMessage" style="display: none;">Object too big — try a smaller bar.</div>
                 </div>
 
                 <!-- Partition Numbers (underneath everything) -->
@@ -58,7 +64,62 @@
                 <div id="partitionDisplayer" class="content display-content"></div>
             </div>
         </div>
+        <!-- Tutorial Overlay -->
+        <div id="tutorialOverlay" class="tutorial-overlay" style="display:none;">
+            <div class="tutorial-modal">
+                <div class="tutorial-slides">
+                    <!-- Slide 1: Intro -->
+                    <div class="tutorial-slide" style="display:flex;">
+                        <canvas id="tut-canvas-1" width="180" height="160"></canvas>
+                        <div class="tutorial-text">
+                            <h2>Welcome to the Chocolate Game!</h2>
+                            <p>Two players take turns breaking off pieces of a chocolate bar.</p>
+                            <p>The bar is shown as a grid of squares — each column represents a stack of pieces.</p>
+                        </div>
+                    </div>
+                    <!-- Slide 2: Move rule -->
+                    <div class="tutorial-slide" style="display:none;">
+                        <canvas id="tut-canvas-2" width="180" height="160"></canvas>
+                        <div class="tutorial-text">
+                            <h2>How to Make a Move</h2>
+                            <p>Click any square (shown in red). That square and all pieces to the right and below it break off (grayed out).</p>
+                            <p>What remains is the next player's bar.</p>
+                        </div>
+                    </div>
+                    <!-- Slide 3: Losing condition -->
+                    <div class="tutorial-slide" style="display:none;">
+                        <canvas id="tut-canvas-3" width="180" height="160"></canvas>
+                        <div class="tutorial-text">
+                            <h2>Losing Condition</h2>
+                            <p>The player who is forced to take the last piece <strong>loses</strong>!</p>
+                            <p>Play smart — can you find the winning strategy?</p>
+                        </div>
+                    </div>
+                    <!-- Slide 4: UI guide -->
+                    <div class="tutorial-slide" style="display:none;">
+                        <div class="tutorial-text tutorial-text-only">
+                            <h2>Using the App</h2>
+                            <ul>
+                                <li>Use <strong>Create Rectangular Partition</strong> to start with a new chocolate bar.</li>
+                                <li>Click squares in the display panel on the right to make a move.</li>
+                                <li>Press <strong>Calculate</strong> to check if you are in a winning or losing position.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="tutorial-footer">
+                    <button id="tut-skip" class="tut-btn tut-btn-secondary" onclick="tutEnd()">Skip</button>
+                    <div class="tut-nav">
+                        <button id="tut-back" class="tut-btn" onclick="tutBack()" disabled>Back</button>
+                        <span id="tut-indicator">1 / 4</span>
+                        <button id="tut-next" class="tut-btn" onclick="tutNext()">Next</button>
+                        <button id="tut-finish" class="tut-btn tut-btn-primary" onclick="tutEnd()" style="display:none;">Let's Play!</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <script src="js/partitions.js"></script>
+        <script src="js/tutorial.js"></script>
         <script src="js/scripts.js"></script>
     </body>
 </html>

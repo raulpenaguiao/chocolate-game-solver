@@ -47,10 +47,10 @@ function displayPartitionYoungDiagram(partition) {
     const marginY = 10;
 
     // Calculate logical canvas size based on partition dimensions
-    const maxRowLength = Math.max(...partition);
-    const numRows = partition.length;
-    const logicalWidth = maxRowLength * (squareSize + padding) + marginX * 2;
-    const logicalHeight = numRows * (squareSize + padding) + marginY * 2;
+    const maxColHeight = Math.max(...partition);
+    const numCols = partition.length;
+    const logicalWidth = numCols * (squareSize + padding) + marginX * 2;
+    const logicalHeight = maxColHeight * (squareSize + padding) + marginY * 2;
 
     // Get available space in display panel
     const availableWidth = partitionDisplayer.clientWidth;
@@ -177,32 +177,73 @@ function drawSquare(ctx, x, y, buttonSize, text, canvas, newPartition) {
     });
 }
 
+let _calcWorker = null;
+let _calcTimeout = null;
+
 function calculate() {
-    // This function will be called when the "Calculate" button is clicked.
-    let result = isWinningPosition(CurrentPartition);
-    // For now, it just logs the current partition.
-    console.log('Calculating for partition:', CurrentPartition);
-    // The goal is that this function will perform some calculations based on the current partition and decides if the partition is a winning position.
-    // Here you can add logic to calculate and display results based on the partition.
-    if (result) {
-        const resultIndicator = document.getElementById('resultIndicator');
-        resultIndicator.style.display = 'block';
-        resultIndicator.style.backgroundColor = 'green'; // Indicate success
-        resultIndicator.textContent = '✓'; // Checkmark for success
-    } else {
-        console.log('Partition is not a winning position.');
-        const resultIndicator = document.getElementById('resultIndicator');
-        resultIndicator.style.display = 'block';
-        resultIndicator.style.backgroundColor = 'red'; // Indicate failure
-        resultIndicator.textContent = '✗'; // Crossmark for failure
+    // Cancel any in-progress calculation
+    if (_calcWorker) {
+        _calcWorker.terminate();
+        _calcWorker = null;
     }
+    clearTimeout(_calcTimeout);
+
+    const resultIndicator = document.getElementById('resultIndicator');
+    const tooBigMessage = document.getElementById('tooBigMessage');
+    const calcButton = document.getElementById('calculateButton');
+
+    resultIndicator.style.display = 'none';
+    tooBigMessage.style.display = 'none';
+    calcButton.disabled = true;
+    calcButton.textContent = 'Calculating…';
+
+    const worker = new Worker('js/worker.js');
+    _calcWorker = worker;
+
+    _calcTimeout = setTimeout(() => {
+        worker.terminate();
+        _calcWorker = null;
+        calcButton.disabled = false;
+        calcButton.textContent = 'Calculate';
+        tooBigMessage.style.display = 'block';
+    }, 3000);
+
+    worker.addEventListener('message', e => {
+        clearTimeout(_calcTimeout);
+        _calcWorker = null;
+        calcButton.disabled = false;
+        calcButton.textContent = 'Calculate';
+
+        resultIndicator.style.display = 'block';
+        if (e.data) {
+            resultIndicator.style.backgroundColor = 'green';
+            resultIndicator.textContent = '✓';
+        } else {
+            resultIndicator.style.backgroundColor = 'red';
+            resultIndicator.textContent = '✗';
+        }
+    });
+
+    worker.postMessage(CurrentPartition);
 }
 
 function resetCalculationDisplay() {
+    if (_calcWorker) {
+        _calcWorker.terminate();
+        _calcWorker = null;
+    }
+    clearTimeout(_calcTimeout);
+
+    const calcButton = document.getElementById('calculateButton');
+    calcButton.disabled = false;
+    calcButton.textContent = 'Calculate';
+
     const resultIndicator = document.getElementById('resultIndicator');
-    resultIndicator.style.display = 'none'; // Hide the result indicator
-    resultIndicator.style.backgroundColor = ''; // Reset background color
-    resultIndicator.textContent = ''; // Clear text content
+    resultIndicator.style.display = 'none';
+    resultIndicator.style.backgroundColor = '';
+    resultIndicator.textContent = '';
+
+    document.getElementById('tooBigMessage').style.display = 'none';
 }
 
 function displayPartitionNumbers(partition) {
@@ -230,8 +271,8 @@ function createRectangularPartition() {
         return;
     }
 
-    // Create rectangular partition: [width, width, width, ..., width] (height times)
-    CurrentPartition = Array(height).fill(width);
+    // Create rectangular partition: [height, height, ..., height] (width times)
+    CurrentPartition = Array(width).fill(height);
 
     // Clear input fields
     widthInput.value = '';
@@ -244,4 +285,13 @@ function createRectangularPartition() {
 let CurrentPartition = [1];
 window.addEventListener('load', () => {
     displayNewPartition();
+    tutInit();
+
+    // Redraw when the display panel is resized (e.g. window resize, orientation change)
+    const displayPanel = document.getElementById('partitionDisplayer');
+    if (window.ResizeObserver) {
+        new ResizeObserver(() => {
+            displayPartitionYoungDiagram(CurrentPartition);
+        }).observe(displayPanel);
+    }
 });
